@@ -1,6 +1,6 @@
 {
   "name": "directus-extension-m2a-field-selector",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "Directus interface extension for selecting items from collections with custom field output",
   "keywords": [
     "directus",
