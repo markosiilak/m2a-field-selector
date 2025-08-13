@@ -7,41 +7,41 @@
       :dense="dense"
       :disabled="disabled"
       item-title="label"
-      item-value="value"/>
+      item-value="value" />
   </div>
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
+  import { computed } from 'vue';
 
-interface Props {
-  modelValue: number | string;
-  items?: Array<{ text: string; value: number }>;
-  text?: string;
-  dense?: boolean;
-  disabled?: boolean;
-}
+  interface Props {
+    modelValue: number | string;
+    items?: Array<{ text: string; value: number }>;
+    text?: string;
+    dense?: boolean;
+    disabled?: boolean;
+  }
 
-const props = withDefaults(defineProps<Props>(), {
-  items: () => [
-    { text: '25', value: 25 },
-    { text: '50', value: 50 },
-    { text: '100', value: 100 },
-    { text: '500', value: 500 }
-  ],
-  text: 'Items per page',
-  dense: true,
-  disabled: false
-});
+  const props = withDefaults(defineProps<Props>(), {
+    items: () => [
+      { text: '25', value: 25 },
+      { text: '50', value: 50 },
+      { text: '100', value: 100 },
+      { text: '500', value: 500 }
+    ],
+    text: 'Items per page',
+    dense: true,
+    disabled: false
+  });
 
-const emit = defineEmits<{
-  'update:modelValue': [value: number | string];
-}>();
+  const emit = defineEmits<{
+    'update:modelValue': [value: number | string];
+  }>();
 
-const modelValueProxy = computed({
-  get: () => props.modelValue,
-  set: (val) => emit('update:modelValue', val)
-});
+  const modelValueProxy = computed({
+    get: () => props.modelValue,
+    set: (val) => emit('update:modelValue', val)
+  });
 </script>
 
 <style scoped>

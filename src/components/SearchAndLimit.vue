@@ -27,9 +27,9 @@
 <script setup lang="ts">
   import { computed, ref, watch } from 'vue';
 
+  import LimitSelector from '../LimitSelector.vue';
   import { CollectionConfig, LimitSelectorItem } from '../types';
   import { getLimitKey } from '../utils';
-  import LimitSelector from '../LimitSelector.vue';
 
   const props = defineProps<{
     collections: CollectionConfig[];

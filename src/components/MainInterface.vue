@@ -87,16 +87,17 @@
 </template>
 
 <script setup lang="ts">
-  import { computed, onMounted, reactive, ref, watch } from 'vue';
   import { useApi } from '@directus/extensions-sdk';
-  import { CollectionConfig, SelectedItem, EventPagination } from '../types';
+  import { computed, onMounted, reactive, ref, watch } from 'vue';
+
+  import { CollectionConfig, EventPagination,SelectedItem } from '../types';
   import { createOutputItem, getItemIdentifier } from '../utils';
+  import ButtonMode from './ButtonMode.vue';
+  import CollectionList from './CollectionList.vue';
   import DisplayValue from './DisplayValue.vue';
+  import DragMode from './DragMode.vue';
   import SearchAndLimit from './SearchAndLimit.vue';
   import SelectedItemsList from './SelectedItemsList.vue';
-  import CollectionList from './CollectionList.vue';
-  import ButtonMode from './ButtonMode.vue';
-  import DragMode from './DragMode.vue';
 
   const props = defineProps<{
     value?: string | null;
