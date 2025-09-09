@@ -140,8 +140,8 @@
   const fetchCollectionItems = async (collection: string, { loadMore = false, search = '' } = {}) => {
     if (!collection) return;
 
-    // Use the correct limit value
-    const limitValue = useSharedLimit.value ? sharedLimit.value : limit[collection];
+    // Use the correct limit value with fallback
+    const limitValue = useSharedLimit.value ? sharedLimit.value : (limit[collection] || 25);
 
     if (collection === 'event') {
       if (eventPagination.value.loading) return;
@@ -533,6 +533,13 @@
   };
 
   onMounted(async () => {
+    // Initialize limit values for each collection
+    for (const config of props.collections) {
+      if (!limit[config.collection]) {
+        limit[config.collection] = 25; // Default limit
+      }
+    }
+
     for (const config of props.collections) {
       await fetchCollectionItems(config.collection, { search: searchQuery.value });
     }
@@ -602,6 +609,13 @@
   });
 
   watch(() => props.collections, (newCollections) => {
+    // Initialize limit values for new collections
+    newCollections.forEach(config => {
+      if (!limit[config.collection]) {
+        limit[config.collection] = 25; // Default limit
+      }
+    });
+
     if (useSharedLimit.value) {
       watch(sharedLimit, (newLimit) => {
         newCollections.forEach(config => {

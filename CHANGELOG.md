@@ -1,3 +1,10 @@
+## [1.1.2] - 2025-01-27
+
+### Fixed
+- Fixed 400 Bad Request error when fetching collection items with undefined limit values
+- Added proper initialization of limit values for all collections with default value of 25
+- Added fallback limit value to prevent API errors when limit[collection] is undefined
+
 ## [1.1.1] - 2025-08-09
 
 ### Added
