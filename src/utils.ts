@@ -242,3 +242,23 @@ export function getLimitKey(useSharedLimit: boolean, collection?: string): strin
     ? "m2a-limit-selector-shared-limit"
     : `m2a-limit-selector-limit-${collection}`;
 }
+
+export const formatDate = (dateString: string | Date): string => {
+  if (!dateString) return "";
+  
+  try {
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "";
+    
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch (error) {
+    console.error('Error formatting date:', error);
+    return "";
+  }
+};

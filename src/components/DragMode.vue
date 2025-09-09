@@ -28,6 +28,9 @@
                 <span v-tooltip.bottom.center="getTooltipValue(item.item, item.outputField)" class="item-label">
                   {{ getDisplayValue(item.item, item.outputField) }}
                 </span>
+                <span v-if="item.item.date_created" class="date-created">
+                  {{ formatDate(item.item.date_created) }}
+                </span>
                 <span class="collection-badge">{{ formatCollectionTitle(item.collection) }}</span>
               </div>
             </v-list-item-content>
@@ -43,6 +46,7 @@
       :collection-items="collectionItems"
       :selected-items="selectedItems"
       :search-query="searchQuery"
+      show-headers
       @toggle-item="toggleItem" />
 
     <template v-if="collections.some(c => c.collection === 'event') && eventPagination.canLoadMore">
@@ -65,7 +69,7 @@
   import draggable from 'vuedraggable';
 
   import { CollectionConfig, EventPagination, SelectedItem } from '../types';
-  import { formatCollectionTitle, getDisplayValue, getItemIdentifier, getTooltipValue } from '../utils';
+  import { formatCollectionTitle, formatDate, getDisplayValue, getItemIdentifier, getTooltipValue } from '../utils';
   import CollectionList from './CollectionList.vue';
   import SearchAndLimit from './SearchAndLimit.vue';
 
@@ -91,7 +95,14 @@
   }>();
 
   const selectedItemsComputed = computed({
-    get: () => props.selectedItems,
+    get: () => {
+      // Sort by date_created (newest first) if available
+      return [...props.selectedItems].sort((a, b) => {
+        const dateA = a.item.date_created ? new Date(a.item.date_created).getTime() : 0;
+        const dateB = b.item.date_created ? new Date(b.item.date_created).getTime() : 0;
+        return dateB - dateA; // Newest first
+      });
+    },
     set: (value: SelectedItem[]) => emit('update:selectedItems', value)
   });
 
@@ -156,6 +167,7 @@
   border: var(--theme-border-width) solid var(--theme-border-color);
   border-radius: var(--theme-border-radius);
   max-height: 400px;
+  overflow-y: auto;
 }
 
 .draggable-container {
@@ -247,6 +259,13 @@
   cursor: move;
   color: var(--theme-foreground-subdued);
   margin-right: var(--input-padding);
+}
+
+.date-created {
+  font-size: var(--theme-font-size-small);
+  color: var(--theme-foreground-subdued);
+  margin-right: var(--input-padding);
+  white-space: nowrap;
 }
 
 .collection-badge {

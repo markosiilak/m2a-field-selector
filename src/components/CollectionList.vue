@@ -27,6 +27,9 @@
                 <span v-tooltip.bottom.center="getTooltipValue(item, config.outputField)" class="item-label">
                   {{ getDisplayValue(item, config.outputField) }}
                 </span>
+                <span v-if="item.date_created" class="date-created">
+                  {{ formatDate(item.date_created) }}
+                </span>
               </div>
             </v-list-item-content>
           </v-list-item>
@@ -49,6 +52,9 @@
               <span v-tooltip.bottom.center="getTooltipValue(item, config.outputField)" class="item-label">
                 {{ getDisplayValue(item, config.outputField) }}
               </span>
+              <span v-if="item.date_created" class="date-created">
+                {{ formatDate(item.date_created) }}
+              </span>
             </div>
           </v-list-item-content>
         </v-list-item>
@@ -61,6 +67,7 @@
   import { CollectionConfig } from '../types';
   import {
     formatCollectionTitle,
+    formatDate,
     getDisplayValue,
     getItemIdentifier,
     getTooltipValue
@@ -94,8 +101,16 @@
       !isSelected(collection, getItemIdentifier(item, outputField))
     );
 
-    // Sort alphabetically by display value
+    // Sort by date_created (newest first) if available, otherwise alphabetically by display value
     return unselected.sort((a, b) => {
+      const dateA = a.date_created ? new Date(a.date_created).getTime() : 0;
+      const dateB = b.date_created ? new Date(b.date_created).getTime() : 0;
+      
+      if (dateA !== 0 || dateB !== 0) {
+        return dateB - dateA; // Newest first
+      }
+      
+      // Fallback to alphabetical sorting
       const aValue = getDisplayValue(a, outputField).toLowerCase();
       const bValue = getDisplayValue(b, outputField).toLowerCase();
       return aValue.localeCompare(bValue);
@@ -173,15 +188,23 @@
       !isSelected(collection, getItemIdentifier(item, outputField))
     );
 
-    // Sort both groups alphabetically
-    const sortByDisplayValue = (a: any, b: any) => {
+    // Sort both groups by date_created (newest first) if available, otherwise alphabetically
+    const sortByDateOrDisplayValue = (a: any, b: any) => {
+      const dateA = a.date_created ? new Date(a.date_created).getTime() : 0;
+      const dateB = b.date_created ? new Date(b.date_created).getTime() : 0;
+      
+      if (dateA !== 0 || dateB !== 0) {
+        return dateB - dateA; // Newest first
+      }
+      
+      // Fallback to alphabetical sorting
       const aValue = getDisplayValue(a, outputField).toLowerCase();
       const bValue = getDisplayValue(b, outputField).toLowerCase();
       return aValue.localeCompare(bValue);
     };
 
-    selected.sort(sortByDisplayValue);
-    unselected.sort(sortByDisplayValue);
+    selected.sort(sortByDateOrDisplayValue);
+    unselected.sort(sortByDateOrDisplayValue);
 
     // Return selected items first, then unselected items
     return [...selected, ...unselected];
@@ -225,6 +248,13 @@
   flex: 1;
   overflow: hidden;
   text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.date-created {
+  font-size: var(--theme-font-size-small);
+  color: var(--theme-foreground-subdued);
+  margin-right: var(--input-padding);
   white-space: nowrap;
 }
 

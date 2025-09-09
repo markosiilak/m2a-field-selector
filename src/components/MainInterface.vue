@@ -67,6 +67,7 @@
             :collection-items="collectionItems"
             :selected-items="selectedItems"
             :search-query="searchQuery"
+            show-headers
             @toggle-item="toggleItem" />
 
           <template v-if="collections.some(c => c.collection === 'event') && eventPagination.canLoadMore">

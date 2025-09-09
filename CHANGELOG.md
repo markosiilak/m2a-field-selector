@@ -1,3 +1,10 @@
+## [1.1.3] - 2025-01-27
+
+### Added
+- Added date display functionality showing creation dates for items
+- Added `formatDate` utility function for consistent date formatting
+- Enhanced item display with creation date information in both CollectionList and DragMode components
+
 ## [1.1.2] - 2025-01-27
 
 ### Fixed
