@@ -92,7 +92,7 @@
   import { computed, onMounted, reactive, ref, watch } from 'vue';
 
   import { CollectionConfig, EventPagination,SelectedItem } from '../types';
-  import { createOutputItem, getItemIdentifier } from '../utils';
+  import { createOutputItem, getItemIdentifier, getTranslationFields } from '../utils';
   import ButtonMode from './ButtonMode.vue';
   import CollectionList from './CollectionList.vue';
   import DisplayValue from './DisplayValue.vue';
@@ -135,6 +135,12 @@
 
   const onDragEnd = () => {
     emitValue();
+  };
+
+  // Function to enhance collections with translation fields
+  const enhanceCollectionsWithTranslations = async (collections: CollectionConfig[]): Promise<CollectionConfig[]> => {
+    // Just return the original collections - we'll handle translation fields differently
+    return collections;
   };
 
   // Methods
@@ -226,7 +232,8 @@
           if (item.translations && Array.isArray(item.translations) && item.translations.length > 0) {
             if (item.translations[0] && !item.translations[0].name && item.translations[0].id) {
               try {
-                const translationsResponse = await api.get(`/items/translations?filter[id][_in]=${
+                const translationsCollection = `${collection}_translations`;
+                const translationsResponse = await api.get(`/items/${translationsCollection}?filter[id][_in]=${
                   item.translations.map((t: any) => t.id).join(',')
                 }`);
                 if (translationsResponse.data && translationsResponse.data.data) {
@@ -545,30 +552,6 @@
       await fetchCollectionItems(config.collection, { search: searchQuery.value });
     }
 
-    if (props.value) {
-      try {
-        const parsed = typeof props.value === 'string' ? JSON.parse(props.value) : props.value;
-        const items = Array.isArray(parsed) ? parsed : [parsed];
-
-        items.forEach(parsed => {
-          const config = props.collections.find(c => c.collection === parsed.collection);
-          if (config) {
-            const item = collectionItems.value[parsed.collection]?.find(
-              item => getItemIdentifier(item, parsed.field) === parsed.id
-            );
-            if (item) {
-              selectedItems.value.push({
-                collection: parsed.collection,
-                outputField: parsed.field,
-                item
-              });
-            }
-          }
-        });
-      } catch (error) {
-        console.error('Error parsing initial value:', error);
-      }
-    }
   });
 
   watch(selectedItems, (items) => {

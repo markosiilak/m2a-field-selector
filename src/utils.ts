@@ -1,13 +1,6 @@
 import type { CollectionConfig, OutputItem } from "./types";
 
 export const getItemIdentifier = (item: any, outputField?: string): string => {
-  if (outputField === "translations" && item.translations && Array.isArray(item.translations)) {
-    const parentId = item.id;
-    const languageCode = item.translations[0]?.languages_code || item.translations[0]?.language;
-    if (parentId && languageCode) {
-      return `${parentId}-${languageCode}`;
-    }
-  }
   return item.id ?? item.name ?? JSON.stringify(item);
 };
 
@@ -21,14 +14,31 @@ export const getDisplayValue = (item: any, outputField: string): string => {
 
   if (outputField === "translations") {
     if (item.translations && Array.isArray(item.translations) && item.translations.length > 0) {
-      for (const translation of item.translations) {
-        if (translation && translation.name) {
-          return translation.name;
+      // Find the main language translation
+      const mainTranslation = item.translations.find((translation: any) => {
+        const languageCode = translation.languages_code || translation.language || translation.lang;
+        return languageCode === 'en' || languageCode === 'en-US' || languageCode === 'en_US' || 
+               translation.is_main || translation.is_primary || translation.main;
+      }) || item.translations[0];
+      
+      if (mainTranslation) {
+        // Try to find any meaningful field in the main translation
+        const fallbackFields = ['title', 'name', 'label'];
+        for (const field of fallbackFields) {
+          if (mainTranslation[field]) {
+            return mainTranslation[field];
+          }
         }
       }
       return "Translation without name";
     }
     return item.name || item.title || "No translations";
+  }
+
+  // Handle translation fields (e.g., "translations.title", "translations.name")
+  if (outputField.startsWith("translations.")) {
+    const translationField = outputField.replace("translations.", "");
+    return getTranslationDisplayValue(item, translationField);
   }
 
   // Try to get the value from the specified output field
@@ -190,18 +200,25 @@ export const createOutputItem = (
     order: index + 1, // Add order number starting from 1
   };
 
-  // Include all language translations when the field is translations
+  // Include only main language translation when the field is translations
   if (
     item.outputField === "translations" &&
     item.item.translations &&
     Array.isArray(item.item.translations)
   ) {
-    baseOutput.translations = item.item.translations
-      .filter((translation: any) => translation && translation.name)
-      .map((translation: any) => ({
-        language: translation.languages_code || translation.language || "",
-        value: translation.name,
-      }));
+    // Find the main language translation
+    const mainTranslation = item.item.translations.find((translation: any) => {
+      const languageCode = translation.languages_code || translation.language || translation.lang;
+      return languageCode === 'en' || languageCode === 'en-US' || languageCode === 'en_US' || 
+             translation.is_main || translation.is_primary || translation.main;
+    }) || item.item.translations[0];
+    
+    if (mainTranslation) {
+      baseOutput.translations = [{
+        language: mainTranslation.languages_code || mainTranslation.language || "",
+        value: mainTranslation.name || mainTranslation.title || mainTranslation.label || "",
+      }];
+    }
   }
 
   // Add parent information if it exists - ensure it's a string
@@ -261,4 +278,67 @@ export const formatDate = (dateString: string | Date): string => {
     console.error('Error formatting date:', error);
     return "";
   }
+};
+
+// Function to check if a collection has translations and get translation fields
+export const getTranslationFields = async (api: any, collection: string): Promise<string[]> => {
+  if (!collection) return [];
+  
+  try {
+    const translationsCollection = `${collection}_translations`;
+    
+    // Check if translations collection exists
+    const fieldsResponse = await api.get(`/fields/${translationsCollection}`);
+    const fields = fieldsResponse.data.data || [];
+    
+    // Look for common translation fields
+    const translationFields: string[] = [];
+    const targetFields = ['title', 'name', 'label', 'description'];
+    
+    targetFields.forEach(fieldName => {
+      const fieldExists = fields.some((field: any) => field.field === fieldName);
+      if (fieldExists) {
+        translationFields.push(fieldName);
+      }
+    });
+    
+    
+    return translationFields;
+  } catch (error) {
+    // Translations collection doesn't exist or error occurred
+    return [];
+  }
+};
+
+// Function to get display value from translation fields
+export const getTranslationDisplayValue = (item: any, translationField: string): string => {
+  if (!item || !item.translations || !Array.isArray(item.translations)) {
+    return "";
+  }
+  
+  
+  // Find the main language translation (usually the first one or one with a specific language code)
+  const mainTranslation = item.translations.find((translation: any) => {
+    // Look for common main language indicators
+    const languageCode = translation.languages_code || translation.language || translation.lang;
+    return languageCode === 'en' || languageCode === 'en-US' || languageCode === 'en_US' || 
+           translation.is_main || translation.is_primary || translation.main;
+  }) || item.translations[0]; // Fallback to first translation if no main language found
+  
+  if (mainTranslation) {
+    // Look for the specific translation field
+    if (mainTranslation[translationField]) {
+      return mainTranslation[translationField];
+    }
+    
+    // If the specific field wasn't found, try common fallback fields
+    const fallbackFields = ['title', 'name', 'label'];
+    for (const field of fallbackFields) {
+      if (mainTranslation[field]) {
+        return mainTranslation[field];
+      }
+    }
+  }
+  
+  return "";
 };

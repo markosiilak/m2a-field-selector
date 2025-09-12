@@ -6,12 +6,14 @@ A Directus interface extension that allows selecting items from multiple collect
 
 - **Multi-Collection Selection**: Select items from multiple collections in a single interface
 - **Custom Field Output**: Specify which field to use as output for each collection
+- **Translation Support**: Automatic detection and display of translation fields with proper language handling
 - **Multiple Display Modes**: Choose between button, drag, and direct display modes
 - **Search Functionality**: Built-in search across all configured collections
 - **Drag and Drop Reordering**: Reorder selected items in drag mode
-- **Flexible Output Formats**: Choose from detailed, simple, or IDs-only output formats
+- **Flexible Output Formats**: Choose from detailed, simple, IDs-only, languages, or event_info output formats
 - **Validation**: Built-in validation for selected items
 - **Customizable**: Configurable placeholders and display options
+- **Robust Error Handling**: Comprehensive error handling for API calls and data processing
 
 ## Installation
 
@@ -61,22 +63,24 @@ Choose how the selected items should be formatted in the data:
 
 - **Detailed**: Returns a standard Directus M2A relationship format
   ```json
-  {
-    "categories": [
-      {
-        "collection": "category",
-        "field": "title",
-        "value": "Camps",
-        "id": 94426642
-      },
-      {
-        "collection": "category",
-        "field": "title", 
-        "value": "Film",
-        "id": 3143044
-      }
-    ]
-  }
+  [
+    {
+      "collection": "category",
+      "field": "title",
+      "value": "Camps",
+      "id": 94426642,
+      "title": "Camps",
+      "order": 1
+    },
+    {
+      "collection": "category",
+      "field": "title", 
+      "value": "Film",
+      "id": 3143044,
+      "title": "Film",
+      "order": 2
+    }
+  ]
   ```
 - **Simple**: Returns an array of output field values
   ```json
@@ -86,9 +90,57 @@ Choose how the selected items should be formatted in the data:
   ```json
   [1, 2, 3]
   ```
+- **Languages**: Returns language-specific data (for language collections)
+  ```json
+  [
+    {
+      "language": "English",
+      "code": "en",
+      "order": 1
+    },
+    {
+      "language": "Estonian", 
+      "code": "et",
+      "order": 2
+    }
+  ]
+  ```
+- **Event Info**: Returns event-specific data with additional metadata
+  ```json
+  [
+    {
+      "name": "Event Name",
+      "id": 123,
+      "event_id": "EVT-001",
+      "order": 1
+    }
+  ]
+  ```
 
 ### Placeholder
 Customize the placeholder text shown in the selector.
+
+### Translation Support
+The extension automatically detects and handles translation collections:
+
+- **Automatic Detection**: When a collection has a corresponding `{collection}_translations` collection, translation fields are automatically available
+- **Smart Language Selection**: Prioritizes main language translations (English variants or explicitly marked primary translations)
+- **Fallback Fields**: Uses common fallback fields (title, name, label) when specific translation fields are not available
+- **Translation Fields**: Supports `translations.title`, `translations.name`, `translations.label`, etc.
+
+Example with translations:
+```json
+[
+  {
+    "collection": "portfolio",
+    "outputField": "translations.title"
+  },
+  {
+    "collection": "news",
+    "outputField": "translations.name"
+  }
+]
+```
 
 ## Usage
 
@@ -157,9 +209,10 @@ This extension works well with other Directus extensions:
 
 ## Compatibility
 
-- Directus 10.x and later
+- Directus 11.x and later
 - Field types: json, alias
-- Node.js >= 16.0.0
+- Node.js >= 22.0.0
+- Vue 3 with Composition API
 
 ## Development
 
@@ -168,7 +221,7 @@ This extension works well with other Directus extensions:
 The project requires `@directus/extensions-sdk` to be installed as a development dependency:
 
 ```bash
-npm install --save-dev @directus/extensions-sdk
+npm install --save-dev @directus/extensions-sdk@^15.0.0
 ```
 
 ### Build Commands

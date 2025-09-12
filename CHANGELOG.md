@@ -1,3 +1,19 @@
+## [1.2.1] - 2025-01-27
+
+### Improved
+- Enhanced translation handling with proper main language detection (English variants or explicitly marked primary translations)
+- Better error handling for translation data fetching
+- More robust fallback fields for translation display (title, name, label)
+- Cleaner component lifecycle management
+
+## [1.2.0] - 2025-01-27
+
+### Fixed
+- Fixed 403 Forbidden errors when fetching translation data by using correct collection naming pattern (`{collection}_translations`)
+- Resolved duplication issue where selected items appeared twice after save operations
+- Fixed double processing of initial values in component mounting and watch functions
+- Improved translation field detection and display with better fallback mechanisms
+
 ## [1.1.3] - 2025-01-27
 
 ### Added
